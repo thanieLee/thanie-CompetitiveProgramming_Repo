@@ -3,7 +3,10 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/mnt/e/libmesh/with_vtk/include/**",
+                "/usr/**",
+                "/home/shwang/deal.ii-candi/petsc-3.7.6/include/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -11,10 +14,10 @@
                 "_UNICODE"
             ],
             "windowsSdkVersion": "10.0.18362.0",
-            "compilerPath": "cl.exe",
+            "compilerPath": "",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "windows-msvc-x64"
+            "intelliSenseMode": "linux-gcc-x64"
         }
     ],
     "version": 4
