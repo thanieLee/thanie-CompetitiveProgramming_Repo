@@ -8,7 +8,7 @@ typedef pair<int, int> pint;
 #define rep(i, n) for (int i = 0; i < n; i++)
 #define revrep(i, n) for (int i = n-1; i >= 0; i--)
 #define repk(i, n, k) for (int i = k; i < n; i++)
-/* testing github*/
+/* testing github part 2*/
 struct val {
   int value = 0;  
 };
