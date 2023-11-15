@@ -20,7 +20,7 @@ struct graph {
     adj[u].push_back({v, w});
     // adj[v].push_back({u, w});
   }
-  void prim(viii &res, ll s, vector<bool> &vis, vector<ll> &cons, vector<bool> &constructed) {
+  void prim(viii &res, ll s, vector<bool> &vis) {
   res.clear();
   std::priority_queue<iii, viii, std::greater<iii>> pq;
   vis[s] = true;
@@ -31,14 +31,10 @@ struct graph {
     ll u = edge.second.second;
     if (vis[u]) continue;
     vis[u] = true;
-    if (edge.first == cons[edge.second.second]){
-        cons[edge.second.second] = true;
-        res.push_back(edge);
-    }
+    res.push_back(edge);
+
     for (auto &[v, w] : adj[u])
-      if (!vis[v]){
-        if (w != cons[v] or (w == cons[v] and !constructed[v]))
-            pq.push({w, {u, v}});}}
+      if (!vis[v]){ pq.push({w, {u, v}});}}
   }
 };
 
@@ -51,86 +47,70 @@ bool cmp(iii &x, iii &y){
 }
 int main(){
     ll n; cin >> n;
-    vector<pair<ll, ll>> coor;
-    vector<vector<ll>> connect(n, vector<ll>(n, 0));
-    vector<ll> build(n, 0);
-    construct.resize(n, 0);
+    vector<pair<ll, ll>> coor(1, {0, 0});
+    vector<vector<ll>> connect(n+1, vector<ll>(n+1, 0));
+    vector<ll> build(n+1, 0);
+    construct.resize(n+1, 0);
 
     for (int i = 0; i < n; i++){
         ll a, b; cin >> a >> b;
         coor.push_back({a, b});
     }
 
-    for (int i = 0; i < n; i++){
+    for (int i = 1; i < n+1; i++){
         ll x; cin >> x;
         construct[i] = x;
     }
 
-    for (int i = 0; i < n; i++){
+    for (int i = 1; i < n+1; i++){
         ll x; cin >> x;
         build[i] = x;
-    }
+    }   
 
-    ll minIdx = -1;
-    ll temp = 10000000000;
-    for (int i = 0; i < n; i++){
-        if (construct[i] < temp) {
-            temp = construct[i];
-            minIdx = i;
-        }
-    }
-
-    for (int i = 0; i < n; i++){
-        for (int j = 0; j < n; j++){
+    for (int i = 1; i < n+1; i++){
+        for (int j = 1; j < n+1; j++){
             if (i == j) continue;
             connect[i][j] = dist(coor[i], coor[j]) * (build[i] + build[j]);
         }
     }
 
-    graph g(n);
-    for (int i = 0; i < n; i++){
-        for (int j = 0; j < n; j++){
+    graph g(n+1);
+    for (int i = 1; i < n+1; i++){
+        g.add_edge(0, i, construct[i]);
+        for (int j = 1; j < n+1; j++){
             if (i == j) continue;
-            g.add_edge(i, j, construct[j]);
             g.add_edge(i, j, connect[i][j]);
         }
     }
 
     viii res;
-    vector<bool> visited(n, false);
-    vector<bool> cons(n, false);
-    g.prim(res, minIdx, visited, construct, cons);
+    vector<bool> visited(n+1, false);
+    vector<bool> cons(n+1, false);
+    g.prim(res, 0, visited);
     sort(res.begin(), res.end(), cmp);
-    set<ll> bui;
+    vector<ll> bui;
     vector<ii> con;
     ll cnt = 0;
     for (int i = 0; i < res.size(); i++){
-        cout << res[i].first << " " << res[i].second.first << " " << res[i].second.second << endl;
-        if (i == 0){
-            bui.insert({res[i].second.first});
-            cnt += build[res[i].first];
-        }
-
-        if (build[res[i].second.second] == res[i].first){
-            bui.insert({res[i].second.second});
+        if (res[i].second.first == 0){
+            bui.push_back(res[i].second.second);
         }  else {
             con.push_back(res[i].second);
         }
         cnt += res[i].first;
     }
-
     cout << cnt << endl;
     cout << bui.size() << endl;
-    for (auto it = bui.begin(); it != bui.end(); it++){
-        cout << *it+1 << " ";
+
+    for (int i = 0; i < bui.size(); i++){
+        cout << bui[i] << " ";
+    
     }
     cout << endl;
 
     cout << con.size() << endl;
-
     for (int i = 0; i < con.size(); i++){
-        cout << con[i].first+1 << " " << con[i].second+1 << endl;
+        cout << con[i].first << " " << con[i].second << endl;
     }
-
 
 }
