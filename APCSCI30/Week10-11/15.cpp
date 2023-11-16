@@ -101,12 +101,12 @@ struct graph1 {
 
 		for (int i = l; i >= 0; i--) {
 			if (par[u][i].first != par[v][i].first) {
+                dist = max(dist, max(par[u][i].second, par[v][i].second));
 				u = par[u][i].first;
 				v = par[v][i].first;
-                dist = max(dist, max(par[u][i].second, par[v][i].second));
 			}
 		}
-		return max(par[u][0].second, dist);
+		return max(max(par[u][0].second, par[v][0].second), dist);
 	}
 };
 
@@ -152,6 +152,4 @@ int main(){
 
         cout << cnt+cur.w-tree.lca(cur.u, cur.v) << endl;
     }
-
-
 }
