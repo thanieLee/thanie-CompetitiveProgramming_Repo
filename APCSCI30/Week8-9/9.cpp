@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <sys/time.h>
 using namespace std;
 typedef pair<int, int> ii;
 typedef long long int ll;
@@ -14,6 +15,8 @@ int MOD(int x){
 }
 
 int main(){
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
     int r, g; cin >> r >> g;
     vector dp(2, vector(2, vector<int>(r+1, 0)));
 
@@ -66,4 +69,11 @@ int main(){
         }
     }
     cout << cnt%m << endl;
+    gettimeofday(&end, NULL);
+    double time_taken;
+    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
+    time_taken = (time_taken + (end.tv_usec - 
+                              start.tv_usec)) * 1e-6;
+
+    cout << fixed << time_taken << setprecision(5) << endl;
 }
