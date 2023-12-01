@@ -2,14 +2,27 @@
     "files.associations": {
         "iostream": "cpp",
         "ostream": "cpp",
-        "array": "cpp",
         "bitset": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "memory": "cpp",
+        "optional": "cpp",
         "string_view": "cpp",
+        "system_error": "cpp",
+        "typeindex": "cpp",
+        "variant": "cpp",
+        "numeric": "cpp",
+        "array": "cpp",
         "initializer_list": "cpp",
         "ranges": "cpp",
         "span": "cpp",
         "regex": "cpp",
         "utility": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "*.tcc": "cpp",
+        "ratio": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp"
     }
 }
