@@ -3,8 +3,7 @@
 using namespace std;
 typedef long long int ll;
 
-
-ll b1 = 17;
+ll b1 = 1000003;
 ll b2 = 19;
 ll b3 = 11;
 ll m1 = 1000000007;
@@ -65,7 +64,7 @@ ll mod_mul(ll a, ll b, ll m)
     return mod(res, m);
 }
 
-int mod_pow(ll x, unsigned int y, ll p) 
+ll mod_pow(ll x, unsigned int y, ll p) 
 { 
     ll res = 1;
     x = mod(x,p);
@@ -84,136 +83,95 @@ int mod_pow(ll x, unsigned int y, ll p)
     return res; 
 }
 
-ll h(ll b, ll m, string s){
-    ll ans = 0;
-    for (int i = 0; i < s.size(); i++){
-        ans += mod_mul(s[i],mod_pow(b,i, m), m);
-        ans = mod(ans, m);
-    }
-    return ans;
-}
-
-ll roll(ll inv, ll b, ll m, ll hash, char c, char r, ll size){
-    hash = mod_mul(inv, hash-r, m);
-    hash = mod(hash, m);
-    hash += mod_mul(c, mod_pow(b, size-1, m), m);
-    hash = mod(hash, m);
-    return hash;
-}
-
+vector<ll> bModPow;
+map<char, map<ll, ll>> modMul;
 ll add(ll inv, ll b, ll m, ll hash, char c, ll size){
-    hash += mod_mul(c, mod_pow(b, size, m), m);
+    hash += modMul[c][size];
     hash = mod(hash, m);
     return hash;
-}
-
-ll combine(ll hash1, ll hash2, ll m){
-    return mod(mod_mul(hash1, mod_pow(2, 32, m), m) + mod(hash2, m), m);
 }
 
 struct hashNode{
-    deque<char> arr;
-    ll startHash, endHash, wholeHash, startLim, endLim;
-
-    hashNode(ll sLim, ll eLim){
-        startHash = 0;
-        endHash = 0;
-        wholeHash = 0;
-        arr = {};
-        startLim = sLim;
-        endLim = eLim; 
+    ll hashLen, hashVal, startingChar;
+    hashNode(ll startingIdx){
+        hashLen = 0;
+        hashVal = 0;
+        startingChar = startingIdx;
     }
 
-    void addStart(char c){
-        wholeHash = add(inv3, b3, m3, wholeHash, c, arr.size());
-        if (arr.size() < startLim){
-            startHash = add(inv1, b1, m1, startHash, c, arr.size());
-        }
-        endHash = add(inv2, b2, m2, endHash, c, arr.size());
-        arr.push_back(c);
+    void addHash(char c){
+        hashVal = add(inv1, b1, m1, hashVal, c, hashLen);
+        hashLen++;
     }
-
-    void rollEnd(char c){
-        endHash = roll(inv2, b2, m2, endHash, c, arr[arr.size()-endLim], endLim);
-    }
-
-    void addChar(char c){
-        wholeHash = add(inv3, b3, m3, wholeHash, c, arr.size());
-        rollEnd(c);
-        arr.push_back(c);
-    }
-
-    void removeBegin(){
-        startHash = add(inv1, b1, m1, startHash, arr[startLim], startLim);
-        startHash = mod(mod_mul(inv1, startHash - arr[0], m1), m1);
-        wholeHash = mod(mod_mul(inv3, wholeHash - arr[0], m3), m3);
-        arr.pop_front();
-    }
-
-    ll hashVal(){
-        return mod((mod_mul(startHash, mod_pow(2, 32, m3), m3))+(mod(endHash, m3)), m3);
-    }
-
-
 };
 
+vector<int> zAlgo(string str, string pattern) {
+    string s = pattern + "#" + str;
+    int n = s.size();
+    vector<int> z(n);
+    int x = 0, y = 0;
+    for (int i = 1; i < n; i++) {
+        z[i] = max(0,min(z[i-x],y-i+1));
+        while (i+z[i] < n && s[z[i]] == s[i+z[i]]) {
+            x = i; y = i+z[i]; z[i]++;
+        }
+    }
+    reverse(z.begin(), z.end());
+    for (int i = 0; i < pattern.size()+1; i++){
+        z.pop_back();
+    }
+    reverse(z.begin(), z.end());
+    return z;
+}
+
 int main(){
-    struct timeval start, end;
-    gettimeofday(&start, NULL);
     cin.tie(0)->sync_with_stdio(0);
     string x, y, z; cin >> x >> y >> z;
-    if (y.size() > x.size() or z.size() > x.size()){
-        cout << 0 << endl;
-        return 0;
-    }
-    unordered_map<ll, unordered_set<ll>> hashMap;
-    ll yHash = 0;
-    for (int i = 0; i < min(y.size(), z.size()); i++){
-        yHash = add(inv1, b1, m1, yHash, y[i], i);
-    }
-    hashNode baseHash(y.size(), z.size());
-    ll idx = 0;
-    while (baseHash.arr.size() < z.size()){
-        baseHash.addStart(x[idx]);
-        idx++;
-    }
-    for (int i = 0; i < x.size()-z.size()+1; i++){
-        if (i != 0){
-            baseHash.addChar(x[i+z.size()-1]);
-            baseHash.removeBegin();
-        }
-        hashNode newHash = baseHash;
-        //cout << newHash.startHash << " " << yHash << endl;
-        if (newHash.startHash != yHash) continue;
-        //cout << "hehe" << endl;
-        hashMap[newHash.hashVal()].insert(newHash.wholeHash);
-        for (int j = i+idx; j < x.size(); j++){
-            newHash.addChar(x[j]);
-            hashMap[newHash.hashVal()].insert(newHash.wholeHash);
+    string alpha = "abcdefghijklmnopqrstuvwxyz";
+    for (int i = 0; i < x.size()+1; i++){
+        bModPow.push_back(mod_pow(b1, i, m1));
+
+        for (char c : alpha){
+            modMul[c][i] = mod_mul(c, bModPow[i], m1);
         }
     }
 
-    string newString = y+z;
-    
-    hashNode testHash(y.size(), z.size());
+    vector<int> pref = zAlgo(x, y);
+    vector<int> suff = zAlgo(x, z);
+    vector<unordered_set<ll>> hashMap(2001, unordered_set<ll>());
+    vector<hashNode> hashes = {hashNode(0)};
+    hashes[0].addHash(x[0]);
+    if (y.size() == 1 and z.size() == 1 and y[0] == z[0]){
+        for (int i = 0; i < x.size(); i++){
+            if (x[i] == y[0]) {
+                hashNode testNode(-1);
+                testNode.addHash(x[0]);
+                hashMap[1].insert(testNode.hashVal);
+                break;
+            }
+        }
+    }
+    for (int i = 1; i < x.size(); i++){
+        char cur = x[i];
+        for (int j = 0; j < hashes.size(); j++){
+            hashNode curHash = hashes[j];
+            curHash.addHash(cur);
+            hashes[j] = curHash;
+            //cout << curHash.startingChar << " " << curHash.startingChar+curHash.hashLen-z.size() << endl;
+            if (pref[curHash.startingChar]==y.size() and suff[curHash.startingChar+curHash.hashLen-z.size()]==z.size() and curHash.hashLen >= max(y.size(), z.size())){
+                hashMap[curHash.hashLen].insert(curHash.hashVal);
+            }
+        }
+        hashNode nextHash = hashNode(i);
+        nextHash.addHash(cur);
+        hashes.push_back(nextHash);
+    }
+
     ll cnt = 0;
-    while (testHash.arr.size() < z.size()){
-        testHash.addStart(newString[cnt]);
-        cnt++;
+    for (int i = 0; i < x.size()+1; i++){
+        //cout << i << " " << hashMap[i].size() << endl;
+        cnt += hashMap[i].size();
     }
+    cout << cnt << endl;
 
-    while (cnt < newString.size()){
-        testHash.addChar(newString[cnt]);
-        cnt++;
-    }
-
-    cout << hashMap[testHash.hashVal()].size() << endl;
-
-    gettimeofday(&end, NULL);
- 
- 
-    double time_taken;
-    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
-    time_taken = (time_taken + (end.tv_usec -start.tv_usec)) * 1e-6;
-    //cout << fixed << time_taken << setprecision(10) << endl;
 }

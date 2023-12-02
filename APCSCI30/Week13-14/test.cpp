@@ -1,7 +1,14 @@
 #include <bits/stdc++.h>
+#include <sys/time.h>
 using namespace std;
 typedef long long int ll;
 
+ll b1 = 100003;
+ll b2 = 19;
+ll b3 = 11;
+ll m1 = 1000000007;
+ll m2 = 1000000009;
+ll m3 = 1000000033;
 ll mod(ll x, ll m) {
 	if (m == 0)
 		return 0;
@@ -31,6 +38,10 @@ ll mod_inv(ll a, ll m) {
 	return 0;
 }
 
+ll inv1 = mod_inv(b1, m1);
+ll inv2 = mod_inv(b2, m2);
+ll inv3 = mod_inv(b3, m3);
+
 ll mod_div(ll a, ll b, ll m) {
 	a = mod(a, m);
 	ll inv = mod_inv(b, m);
@@ -53,7 +64,7 @@ ll mod_mul(ll a, ll b, ll m)
     return mod(res, m);
 }
 
-int mod_pow(ll x, unsigned int y, ll p) 
+ll mod_pow(ll x, unsigned int y, ll p) 
 { 
     ll res = 1;
     x = mod(x,p);
@@ -64,58 +75,103 @@ int mod_pow(ll x, unsigned int y, ll p)
             res = (res*x);
             res = mod(res, p);
         y = y>>1;
+        x = mod(x, p);
         x = (x*x);
+        x = mod(x, p);
         res = mod(res, p);
     } 
     return res; 
 }
 
-ll h(ll b, ll m, string s){
-    ll ans = 0;
-    for (int i = 0; i < s.size(); i++){
-        ans += mod_mul(s[i],mod_pow(b,i, m), m);
-        ans = mod(ans, m);
-    }
-    return ans;
-}
-
-ll roll(ll inv, ll b, ll m, ll hash, char c, char r, ll size){
-    hash = mod_mul(inv, hash-r, m);
-    hash = mod(hash, m);
-    hash += mod_mul(c, mod_pow(b, size-1, m), m);
-    hash = mod(hash, m);
-    return hash;
-}
-
+vector<ll> bModPow;
+map<char, map<ll, ll>> modMul;
 ll add(ll inv, ll b, ll m, ll hash, char c, ll size){
-    hash += mod_mul(c, mod_pow(b, size, m), m);
+    hash += modMul[c][size];
     hash = mod(hash, m);
     return hash;
 }
 
-ll combine(ll hash1, ll hash2, ll m){
-    return mod(mod_mul(hash1, mod_pow(2, 32, m), m) + mod(hash2, m), m);
+struct hashNode{
+    ll hashLen, hashVal, startingChar;
+    hashNode(ll startingIdx){
+        hashLen = 0;
+        hashVal = 0;
+        startingChar = startingIdx;
+    }
+
+    void addHash(char c){
+        hashVal = add(inv1, b1, m1, hashVal, c, hashLen);
+        hashLen++;
+    }
+};
+
+vector<int> zAlgo(string str, string pattern) {
+    string s = pattern + "#" + str;
+    int n = s.size();
+    vector<int> z(n);
+    int x = 0, y = 0;
+    for (int i = 1; i < n; i++) {
+        z[i] = max(0,min(z[i-x],y-i+1));
+        while (i+z[i] < n && s[z[i]] == s[i+z[i]]) {
+            x = i; y = i+z[i]; z[i]++;
+        }
+    }
+    reverse(z.begin(), z.end());
+    for (int i = 0; i < pattern.size()+1; i++){
+        z.pop_back();
+    }
+    reverse(z.begin(), z.end());
+    return z;
 }
+
 int main(){
+    cin.tie(0)->sync_with_stdio(0);
     string x, y, z; cin >> x >> y >> z;
-    unordered_map<ll, set<ll>> hashMap;
-    ll b1 = 17, b2 = 19, b3 = 11;
-    ll m1 = 1000000007, m2 = 1000000009, m3 = 1000000033;
-    ll inv1 = mod_inv(b1, m1), inv2 = mod_inv(b2, m2), inv3 = mod_inv(b3, m3);
+    string alpha = "abcdefghijklmnopqrstuvwxyz";
+    for (int i = 0; i < x.size()+1; i++){
+        bModPow.push_back(mod_pow(b1, i, m1));
 
-    string main = "";
-    for (int i = 0; i < max(y.size(), z.size()); i++){
-        main += x[i];
-    }
-    string temp1 = "", temp2 = "";
-
-    for (int i = 0; i < y.size(); i++){
-        temp1 += x[i];
+        for (char c : alpha){
+            modMul[c][i] = mod_mul(c, bModPow[i], m1);
+        }
     }
 
-    for (int i = main.size()-z.size(); i < main.size(); i++){
-        temp2 += main[i];
+    vector<int> pref = zAlgo(x, y);
+    vector<int> suff = zAlgo(x, z);
+    vector<set<ll>> hashMap(2001, set<ll>());
+    vector<hashNode> hashes = {hashNode(0)};
+    hashes[0].addHash(x[0]);
+    if (y.size() == 1 and z.size() == 1 and y[0] == z[0]){
+        for (int i = 0; i < x.size(); i++){
+            if (x[i] == y[0]) {
+                hashNode testNode(-1);
+                testNode.addHash(x[0]);
+                hashMap[1].insert(testNode.hashVal);
+                break;
+            }
+        }
+    }
+    for (int i = 1; i < x.size(); i++){
+        char cur = x[i];
+        for (int j = 0; j < hashes.size(); j++){
+            hashNode curHash = hashes[j];
+            curHash.addHash(cur);
+            hashes[j] = curHash;
+            //cout << curHash.startingChar << " " << curHash.startingChar+curHash.hashLen-z.size() << endl;
+            if (pref[curHash.startingChar]==y.size() and suff[curHash.startingChar+curHash.hashLen-z.size()]==z.size() and curHash.hashLen >= max(y.size(), z.size())){
+                hashMap[curHash.hashLen].insert(curHash.hashVal);
+            }
+        }
+        hashNode nextHash = hashNode(i);
+        nextHash.addHash(cur);
+        hashes.push_back(nextHash);
     }
 
-    cout << main << " " << temp1 << " " << temp2 << endl;
+    ll cnt = 0;
+    for (int i = 0; i < x.size()+1; i++){
+        //cout << i << " " << hashMap[i].size() << endl;
+        cnt += hashMap[i].size();
+    }
+    cout << cnt << endl;
+
 }

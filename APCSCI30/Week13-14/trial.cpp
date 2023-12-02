@@ -1,43 +1,57 @@
 #include <bits/stdc++.h>
 using namespace std;
- 
-vector<int> z(string s, int size) {
-        int n = s.size();
-        vector<int> z(n);
-        int x = 0, y = 0;
-        for (int i = 1; i < n; i++) {
-           z[i] = max(0,min(z[i-x],y-i+1));
-           while (i+z[i] < n && s[z[i]] == s[i+z[i]]) {
-               x = i; y = i+z[i]; z[i]++;
-           }
-    }
-    reverse(z.begin(), z.end());
-    for (int i = 0; i < size; i++){
-        z.pop_back();
-    }
-    reverse(z.begin(), z.end());
-    return z;
-}
+
 
  
 int main(){
-    string w, p, s; cin >> w >> p >> s;
+    int t; cin >> t;
+    while (t){
+        label:
+        t--;
+        if (t == -1) break;
+        int n; cin >> n;
+        vector<vector<int>> M(n, vector<int>(n));
+        for (int i = 0; i < n; i++){
+            for (int j = 0; j < n; j++){
+                int x; cin >> x;
+                M[i][j] = x;
+            }
+        }
 
-    string prefString = p + "#" + w;
-    string suffString = s + "#" + w;
+        vector<int> ans(n, (1<<30)-1);
+        
+        for (int i = 0; i < n; i++){
+            for (int j = i+1; j < n; j++){
+                for (int k = 0; k < 30; k++){
+                    if ((M[i][j] & (1<<k)) == 0) {
+                        ans[i] = ans[i] & ~(1<<k);
+                        ans[j] = ans[j] & ~(1<<k);
+                    }
+                }
+            }
+        }
 
-    vector<int> prefArr = z(prefString, p.size());
-    vector<int> suffArr  = z(suffString, s.size());
+        vector<vector<int>> newM(n, vector<int>(n));
+        for (int i = 0; i < n; i++){
+            for (int j = 0; j < n; j++){
+                if (i == j) continue;
+                newM[i][j] = ans[i]|ans[j];
+            }
+        }
 
-    for (int i = 0; i < prefArr.size(); i++){
-        cout << prefArr[i] << " ";
+        for (int i = 0; i < n; i++){
+            for (int j = 0; j < n; j++){
+                if (M[i][j] != newM[i][j]){
+                    cout << "NO" << endl;
+                    goto label;
+                }
+            }
+        }
+
+        cout << "YES" << endl;
+        for (int i = 0; i < n; i++){
+            cout << ans[i] << " ";
+        }
+        cout << endl;
     }
-    cout << endl;
-
-    for (int i = 0; i < suffArr.size(); i++){
-        cout << suffArr[i] << " ";
-    }
-    cout << endl;
-    
-  
 }

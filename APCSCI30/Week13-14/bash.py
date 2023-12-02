@@ -1,9 +1,22 @@
-al = "abcdefghijklmnopqrstuvwxyz"
+def max_cypriot_value(n, arr):
+    max_cypriot = arr[0]
+    current_sum = arr[0]
 
-s1 = ""
+    for i in range(1, n):
+        current_sum = max(arr[i], current_sum + arr[i])
+        max_cypriot = max(max_cypriot, current_sum)
 
-for i in range(2000):
-    s1 += al[i%26]
-print(s1)
-print(s1[0:500])
-print(s1[1500:2000])
+    return max_cypriot
+
+def main():
+    t = int(input())
+    
+    for _ in range(t):
+        n = int(input())
+        arr = list(map(int, input().split()))
+        
+        result = max_cypriot_value(n, arr)
+        print(result)
+
+if __name__ == "__main__":
+    main()
