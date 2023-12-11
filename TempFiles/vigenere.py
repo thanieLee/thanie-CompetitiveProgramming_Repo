@@ -11,6 +11,7 @@ class Node(object):
     def __init__(self, key, data=None):
         self.key = key
         self.data = data # data is set to None if node is not the final char of string
+        self.isEnd = False
         self.children = {}
         
 class Trie(object):
@@ -91,13 +92,8 @@ def VigenereCipher(key, word):
     output = ""
     key = key.lower()
     word = word.lower()
-    spCnt = 0
     for i in range(len(word)):
-        if word[i] == " ":
-            output += " "
-            spCnt += 1
-            continue
-        keyVal = alphabet.find(key[(i-spCnt)%len(key)])
+        keyVal = alphabet.find(key[(i)%len(key)])
         wordVal = alphabet.find(word[(i)])
         output += alphabet[(keyVal+wordVal)%26]
 
@@ -107,9 +103,40 @@ t = Trie()
 file = open("EnglishWords.txt", "r")
 words = file.readlines()
 
-print(VigenereCipher("math", "cryptography is super cool"))
+def VigenereDecipher(keyGuess, cipher):
+    guess = ""
+    for i in range(len(cipher)):
+        keyGuessVal = alphabet.find(keyGuess[i%len(keyGuess)])
+        cipherVal = alphabet.find(cipher[i])
+        guess += alphabet[(cipherVal-keyGuessVal)%26]
+    return guess
 
+possibleKeys = []
+def VigenereDecipherBruteForce(keyLen, cipher, cur=""):
+    if len(cur) == keyLen:
+        word = VigenereDecipher(cur, cipher)
+        curNode = t.head
+        charCnt = 0
+        for char in word:
+            if char not in curNode.children:
+                break
+            curNode = curNode.children[char]
+            if curNode.data != None and charCnt > 5:
+                possibleKeys.append(cur) 
+            charCnt += 1
+    else:
+        for i in range(26):
+            cur1 = (cur + '.')[:-1]
+            cur1 += alphabet[i]
+            VigenereDecipherBruteForce(keyLen, cipher, cur1)
+
+cnt = 0
 for word in words:
+    word = word.strip()
     t.insert(word)
+
+print(VigenereCipher("math", "cryptographyissupercool"))
+#print(VigenereDecipherBruteForce(4, VigenereCipher("math", "cryptographyissupercool")))
+#print(*possibleKeys)
 
 
