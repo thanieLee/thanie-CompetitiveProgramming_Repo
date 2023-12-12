@@ -119,7 +119,6 @@ def keyElim(keyLen, probWord, cipher):
     for i in range(keyLen):
         cipherVal = alphabet.find(cipher[i+index])
         plainVal = alphabet.find(probWord[i])
-        print((i+index)%keyLen)
         key[(i+index)%keyLen] = alphabet[(cipherVal-plainVal)%26]
     keyStr = ""
     for char in key:
