@@ -1,104 +1,18 @@
+from collections import defaultdict
 alphabet = "abcdefghijklmnopqrstuvwxyz"
-
-class Node(object):
-    """
-    A single node of a trie.
-    
-    Children of nodes are defined in a dictionary
-    where each (key, value) pair is in the form of
-    (Node.key, Node() object).
-    """
-    def __init__(self, key, data=None):
-        self.key = key
-        self.data = data # data is set to None if node is not the final char of string
-        self.isEnd = False
-        self.children = {}
-        
-class Trie(object):
-    """
-    A simple Trie with insert, search, and starts_with methods.
-    """
-    def __init__(self):
-        self.head = Node(None)
-    
-    """
-    Inserts string in the trie.
-    """
-    def insert(self, string):
-        curr_node = self.head
-        
-        for char in string:
-            if char not in curr_node.children:
-                curr_node.children[char] = Node(char)
-                
-            curr_node = curr_node.children[char]
-            
-        # When we have reached the end of the string, set the curr_node's data to string.
-        # This also denotes that curr_node represents the final character of string.
-        curr_node.data = string
-    
-    
-    """
-    Returns if string exists in the trie
-    """
-    def search(self, string):
-        curr_node = self.head
-        
-        for char in string:
-            if char in curr_node.children:
-                curr_node = curr_node.children[char]
-            else:
-                return False
-            
-        # Reached the end of string,
-        # If curr_node has data (i.e. curr_node is not None), string exists in the trie
-        if (curr_node.data != None):
-            return True
-    
-    """
-    Returns a list of words in the trie
-    that starts with the given prefix.
-    """
-    def starts_with(self, prefix):
-        curr_node = self.head
-        result = []
-        subtrie = None
-        
-        # Locate the prefix in the trie,
-        # and make subtrie point to prefix's last character Node
-        for char in prefix:
-            if char in curr_node.children:
-                curr_node = curr_node.children[char]
-                subtrie = curr_node
-            else:
-                return None
-            
-        # Using BFS, traverse through the prefix subtrie,
-        # and look for nodes with non-null data fields.
-        queue = list(subtrie.children.values())
-        
-        while queue:
-            curr = queue.pop()
-            if curr.data != None:
-                result.append(curr.data)
-            
-            queue += list(curr.children.values())
-                
-        return result
-
-
-
 def VigenereCipher(key, word):
     output = ""
     key = key.lower()
     word = word.lower()
     for i in range(len(word)):
+        if word[i] not in alphabet:
+            output += word[i]
+            continue
         keyVal = alphabet.find(key[(i)%len(key)])
         wordVal = alphabet.find(word[(i)])
         output += alphabet[(keyVal+wordVal)%26]
 
     return output        
-t = Trie()
 
 file = open("EnglishWords.txt", "r")
 words = file.readlines()
@@ -130,13 +44,112 @@ def VigenereDecipherBruteForce(keyLen, cipher, cur=""):
             cur1 += alphabet[i]
             VigenereDecipherBruteForce(keyLen, cipher, cur1)
 
-cnt = 0
-for word in words:
-    word = word.strip()
-    t.insert(word)
 
-print(VigenereCipher("math", "cryptographyissupercool"))
+
+def IndexOfCoincidence(text, period):
+    cnt = 0
+    freq = defaultdict(int)
+    n = 0
+    for char in text:
+        if char in alphabet:
+            n += 1
+    check = 0
+    for i in range(0, len(text), period):
+        if text[i] not in alphabet:
+            continue
+        freq[text[i]] += 1
+        check += 1
+    
+
+    for key, val in freq.items():
+        cnt += (val * val-1)
+    
+    return cnt  / ((check * (check-1)))
+
+
+def FindKeywordLen(cur):
+    ans = 0
+    cnt = 100000
+    engIC = 0.06667
+    for i in range(1, 11):
+        ic = IndexOfCoincidence(cur, i)
+        if abs(ic - engIC) < cnt:
+            ans = i
+            cnt = abs(ic - engIC)
+    return ans
+
+def clearText(t):
+    t = t.replace(" ", "")
+    t = t.replace(",", "")
+    t = t.replace(".", "")
+    t = t.lower()
+    return t
+
+def keyElim(keyLen, probWord, cipher):
+    if len(probWord) < keyLen+1:
+        return "probable guess not long enough"
+    cipherShift = (cipher + '.')[:-1]
+    for i in range(keyLen):
+        cipherShift = cipherShift[1:]
+    
+    newShift = ""
+    print(cipher[:20])
+    print(cipherShift[:20])
+    for i in range(len(cipherShift)):
+        shiftVal = alphabet.find(cipherShift[i])
+        origVal = alphabet.find(cipher[i])
+        newShift += alphabet[(origVal - shiftVal)%26]
+    
+    print(newShift[:20])
+    shiftedWord = (probWord + '.')[:-1]
+    for i in range(keyLen):
+        shiftedWord = shiftedWord[1:]
+    wordShift = ""
+    for i in range(len(shiftedWord)):
+        shiftVal = alphabet.find(shiftedWord[i])
+        origVal = alphabet.find(probWord[i])
+        wordShift += alphabet[(origVal - shiftVal)%26]
+
+    print(wordShift[:5])
+    index = newShift.find(wordShift)
+    if index == -1:
+        return "Cannot find key"
+
+    key = [""] * keyLen
+    for i in range(keyLen):
+        cipherVal = alphabet.find(cipher[i+index])
+        plainVal = alphabet.find(probWord[i])
+        print((i+index)%keyLen)
+        key[(i+index)%keyLen] = alphabet[(cipherVal-plainVal)%26]
+    keyStr = ""
+    for char in key:
+        keyStr += char
+    return keyStr
+
+test = "a love letter to number theory: There was a time when he would have embraced the change that was coming. In his youth, he sought adventure and the unknown, but that had been years ago. He wished he could go back and learn to find the excitement that came with change but it was useless. That curiosity had long left him to where he had come to loathe anything that put him out of his comfort zone. If he had anything confidential to say, he wrote it in cipher, that is, by so changing the order of the letters of the alphabet, that not a word could be made out."
+#test = "numbertheoryisoneofthemostinterestingsubjects"
+test = clearText(test)
+cur = VigenereCipher("prime", test)
+print(cur[:25])
+
+print(keyElim(5, "loveletter", cur))
 #print(VigenereDecipherBruteForce(4, VigenereCipher("math", "cryptographyissupercool")))
 #print(*possibleKeys)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""for word in words:
+    word = word.strip()
+    t.insert(word)"""
