@@ -7,12 +7,7 @@ int mod11(int x) {
 }
 
 int main(){
-    string n; cin >> n;
-    if (n == "0") {
-        cout << 0 << endl;
-        return 0;
-    }
-    
+    string n; cin >> n; 
     int l = n.size();
     int cnt = 0;
     vector<int> digCnt(10, 0);
@@ -31,12 +26,13 @@ int main(){
                 dp[i][j][k][1] = dp[i-1][j][k][1] or dp[i][j][k][1];
                 if (k > 0) {
                     if (n[i-1] == '0'){
-                        dp[i][j][k][0] = dp[i-1][mod11(j-(n[i-1] - '0'))][k-1][0] or dp[i][j][k][0];
-                        dp[i][j][k][1] = dp[i-1][mod11(j-(n[i-1] - '0'))][k-1][1] or dp[i][j][k][1];
-                        if (dp[i-1][mod11(j-(n[i-1] - '0'))][k-1][1]) {
+                        dp[i][j][k][0] = dp[i-1][j][k-1][0] or dp[i][j][k][0];
+                        dp[i][j][k][1] = dp[i-1][j][k-1][1] or dp[i][j][k][1];
+
+                        if (dp[i-1][j][k-1][1]) {
                             take[i][j][k][1] = true;
                         }
-                        if (dp[i-1][mod11(j-(n[i-1] - '0'))][k-1][0]) {
+                        if (dp[i-1][j][k-1][0]) {
                             take[i][j][k][0] = true;
                         }
                     } else {
@@ -53,7 +49,7 @@ int main(){
             }
         }
     }
-   vector<int> arr;
+    vector<int> arr;
     for (int j = 0; j < 11; j++){
         if (mod11(2*j) != mod11(cnt)) {
             continue;
@@ -66,18 +62,14 @@ int main(){
         int tempIdx = n.length();
         int tempCnt = oddCnt;
         int hasVal = false;
-
         while (min(tempSum, min(tempIdx, tempCnt)) >= 0) {
-            if (tempCnt == oddCnt and ((n[tempIdx-1]-'0') == 0)) {
-                tempIdx--;
-                continue;
-            }
             if ((take[tempIdx][tempSum][tempCnt][1]) or (take[tempIdx][tempSum][tempCnt][0] and hasVal)) {
                 arr.push_back(n[tempIdx-1]-'0');
                 tempCnt--;
                 tempSum -= n[tempIdx-1]-'0';
                 tempSum = mod11(tempSum);
-                hasVal = true;
+                if (n[tempIdx-1] != '0')
+                    hasVal = true;
             } 
             tempIdx--;
         }
@@ -86,7 +78,7 @@ int main(){
     }
 
 out:
-    int m = 0;
+    int m = 0;;
     if (arr.size() < oddCnt) {
         cout << -1 << endl;
         return 0;
