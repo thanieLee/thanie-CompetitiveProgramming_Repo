@@ -42,10 +42,7 @@ int main(){
                     } else {
                         dp[i][j][k][1] = dp[i-1][mod11(j-(n[i-1] - '0'))][k-1][0] or dp[i][j][k][0];
                         dp[i][j][k][1] = dp[i-1][mod11(j-(n[i-1] - '0'))][k-1][1] or dp[i][j][k][1];
-                        if (dp[i-1][mod11(j-(n[i-1] - '0'))][k-1][1]) {
-                            take[i][j][k][1] = true;
-                        }
-                        if (dp[i-1][mod11(j-(n[i-1] - '0'))][k-1][0]) {
+                        if (dp[i-1][mod11(j-(n[i-1] - '0'))][k-1][1] or dp[i-1][mod11(j-(n[i-1] - '0'))][k-1][0]) {
                             take[i][j][k][1] = true;
                         }
                     }
@@ -66,7 +63,7 @@ int main(){
         int tempIdx = n.length();
         int tempCnt = oddCnt;
         int hasVal = false;
-
+        cout << 't' << endl;
         while (min(tempSum, min(tempIdx, tempCnt)) >= 0) {
             if (tempCnt == oddCnt and ((n[tempIdx-1]-'0') == 0)) {
                 tempIdx--;
