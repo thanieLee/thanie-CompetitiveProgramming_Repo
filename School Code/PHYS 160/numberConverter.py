@@ -19,7 +19,6 @@ def convertNum(originalNum: str, originalRadix: int, newRadix: int) -> str:
         if i == floatingPointIndex:
             continue
         
-        print(originalNum[i], (floatingPointIndex - (1 if i < floatingPointIndex else 0) - i))
         decimalVal += charConvertString.find(originalNum[i]) * pow(originalRadix, (floatingPointIndex - (1 if i < floatingPointIndex else 0)) - i)
     
     currentDigitVal = 0
@@ -30,7 +29,6 @@ def convertNum(originalNum: str, originalRadix: int, newRadix: int) -> str:
     currentDigitVal -= 1
     
     for i in range(currentDigitVal, -7, -1):
-        print(math.floor(decimalVal/pow(newRadix, i)), decimalVal)
         outputString += charConvertString[math.floor(decimalVal/pow(newRadix, i))]
         decimalVal -= math.floor(decimalVal/pow(newRadix, i)) * pow(newRadix, i)
 
@@ -39,3 +37,4 @@ def convertNum(originalNum: str, originalRadix: int, newRadix: int) -> str:
 
 
     return outputString
+
