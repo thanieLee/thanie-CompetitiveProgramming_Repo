@@ -1,4 +1,4 @@
-n = 2000
-print(n)
-for i in range(n):
-    print(i*3, i*3+1, i*3+2, 1)
+print(1000)
+for i in range(1, 1001):
+    print((i-1)>>1)
+    
