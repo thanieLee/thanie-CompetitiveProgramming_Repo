@@ -10,6 +10,9 @@
         "span": "cpp",
         "regex": "cpp",
         "utility": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "cmath": "cpp",
+        "tuple": "cpp",
+        "bit": "cpp"
     }
 }
