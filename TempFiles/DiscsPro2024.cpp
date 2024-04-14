@@ -72,10 +72,19 @@ struct segtree {
         return ans;
     }
 };
+using namespace std::chrono;
 
 int main(){
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    auto start = high_resolution_clock::now();
     int n, m; cin >> n >> m;
     vector<Perm> permutations;
+    Perm sta(m);
+    for (int i = 0; i < m; i++) {
+        ll x; cin >> x; x--;
+        sta.a[i] = x;
+    }
     for (int i = 0; i < n; i++) {
         Perm cur(m);
         int l, r; cin >> l >> r; l--; r--;
@@ -89,11 +98,11 @@ int main(){
         string query; cin >> query;
         if (query == "PERM") {
             int l, r; cin >> l >> r; l--; r--;
-            Perm ans = t.query(1, 0, n-1, l, r);
+            Perm ans = sta*t.query(1, 0, n-1, l, r);
             for (int i = 0; i < m; i++){
-                cout << ans.a[i] << " ";
+                cout << ans.a[i]+1 << " ";
             }
-            cout << endl;
+            cout << '\n';
         } else {
             int pos, l, r; cin >> pos >> l >> r; pos--; l--; r--;
             Perm next(m);
@@ -102,4 +111,7 @@ int main(){
             t.update(1, 0, n-1, pos, next);
         }
     }
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    //cout << "Time taken by function: " << duration.count() << " microseconds" << endl;
 }
