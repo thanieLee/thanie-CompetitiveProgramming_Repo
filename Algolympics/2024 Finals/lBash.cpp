@@ -21,7 +21,7 @@ int main(){
     generate(0, st);
     cout << comb[0].size() << endl;
     vector<vector<ll>> pos;
-    vector<pll> Oswaps = {{0, 1}, {0, 3}, {0, 2}, {0, 5}, {0, 4}};
+    vector<pll> Oswaps = {{0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5},};
     for (auto com : comb) {
         vector<pll> swaps = {{0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}};
         vector<ll> count(7, 0);
@@ -52,6 +52,7 @@ int main(){
                 orig2[s.first] = temp;
             }
 
+            vector<ll> test = {2,3,4,5,2,3};
 
             if (orig1 == orig2 and swaps != Oswaps) {
                 for (int i = 0; i < 6; i++) {
@@ -71,5 +72,6 @@ int main(){
                 cout << endl;
             }
         } while (next_permutation(swaps.begin(), swaps.end()));
+        cout << cnt << endl;
     }
 }
