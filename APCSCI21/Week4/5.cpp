@@ -13,23 +13,7 @@ struct three {
 };
 
 bool cmp(three &x, three &y) {
-    if (x.h == 0) {
-        return true;
-    }
-
-    if (y.h == 0) {
-        return false;
-    }
-
-    if (x.s == 0) {
-        return false;
-    }
-
-    if (y.s == 0) {
-        return true;
-    }
-
-    return x.noise > y.noise;
+    return x.s*y.h > x.h*y.s;
 } 
 
 int main() {
@@ -53,7 +37,6 @@ int main() {
     sort(arr.begin(), arr.end(), cmp);
     ll sCnt=0, ans=0;
     for (auto t : arr) {
-        //cout << t.s << " " << t.h << " " << t.noise << endl;
         ans += t.h*sCnt;
         sCnt += t.s;
         ans += t.noise;
