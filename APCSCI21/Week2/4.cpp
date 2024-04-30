@@ -12,6 +12,7 @@ bool cmp(ll u, ll v) {
 } 
 
 int main(){
+    cerr.tie(NULL);
     ll n; cin >> n;
     for (ll i = 0; i < 1<<n; i++){
         ll x; cin >> x;
@@ -37,7 +38,7 @@ int main(){
         int cnt = 0;
         for (auto c : dp[i]) {
             cnt += c.first;
-            //cout << c.first << " " << c.second << " | ";
+            cerr << c.first << " " << c.second << " | ";
         }
         //cout << endl;
         ans[i] = max(cnt, ans[i-1]);
