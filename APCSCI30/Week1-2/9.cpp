@@ -1,7 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 typedef long long int ll;
-#define INF 10000000000
+#define INF 1000000000000
+#define MAX 1000000000
 
 struct edge {
     size_t i;
@@ -29,44 +30,44 @@ struct flow_network {
     }
 
     bool find_aug_path() {
-    	fill(par.begin(), par.end(), -1);
-    	par[s] = -2;
-    	queue<int> q;
-    	q.push(s);
-    	while (!q.empty()) {
-    		int u = q.front(); q.pop();
-    		if (u == t)
-    			break;
-    		for (int i : adj[u]) {
-    			edge& e = edges[i];
-    			if (e.resid() > 0 && par[e.v] == -1) {
-    				par[e.v] = e.i;
-    				q.push(e.v);
-    			}
-    		}
-    	}
-    	return par[t] != -1;
+        fill(par.begin(), par.end(), -1);
+        par[s] = -2;
+        queue<int> q;
+        q.push(s);
+        while (!q.empty()) {
+            int u = q.front(); q.pop();
+            if (u == t)
+                break;
+            for (int i : adj[u]) {
+                edge& e = edges[i];
+                if (e.resid() > 0 && par[e.v] == -1) {
+                    par[e.v] = e.i;
+                    q.push(e.v);
+                }
+            }
+        }
+        return par[t] != -1;
     }
     ll augment() {
-    	ll flow = -INF;
-    	for (int v = t; v != s; v = edges[par[v] ^ 1].v)
-    		flow = min(flow, edges[par[v]].resid());
-    	for (int v = t; v != s; v = edges[par[v] ^ 1].v) {
-    		edges[par[v]].f += flow;
-    		edges[par[v]^1].f -= flow;
-    	}
-    	return flow;
+        ll flow = INF;
+        for (int v = t; v != s; v = edges[par[v] ^ 1].v)
+            flow = min(flow, edges[par[v]].resid());
+        for (int v = t; v != s; v = edges[par[v] ^ 1].v) {
+            edges[par[v]].f += flow;
+            edges[par[v]^1].f -= flow;
+        }
+        return flow;
     }
     ll max_flow() {
-    	ll flow = -100000000000;
-    	while (find_aug_path()) {
-    		flow += augment();
-    	}
-    	return flow;
+        ll flow = 0;
+        while (find_aug_path()) {
+            flow += augment();
+        }
+        return flow;
     }
 };
-
 int main(){
+    cout << 1%(-1) << endl;
     ll n; cin >> n;
     vector<ll> arr;
     vector<vector<ll>> mul(n, vector<ll>());
@@ -77,31 +78,69 @@ int main(){
         cnt += x;
     }
 
+    sort(arr.begin(), arr.end());
+    for (ll i : arr) {
+        cout << i << " ";
+    }
+    cout << endl;
     for (int i = 0; i < n; i++){
         for (int j = 0; j < n; j++){
-            if (arr[j]%arr[i] == 0) {
-                mul[i].push_back(j);
+            if ((j+1)%(i+1) == 0 and abs((j+1)/(i+1)) >= 2) {
+                mul[i].push_back(j+1);
             }
         }
     }
 
-    flow_network t((n+1)*2, 0, ((n+1)*2)-1);
+    flow_network t(n+2, 0, n+1);
+    vector<vector<bool>> done(n+3, vector<bool>(n+3, false));
     vector<ll> revCnt(n);
 
+    for (int i = 1; i <= n; i++) {
+        if (!done[0][i]){
+            t.add_edge(0, i, -arr[i-1]+MAX);
+            done[0][i] = true;
+        }
+            
+        cout << 0 << " " << i << " " << arr[i-1] << " " << MAX << endl;
+        for (int j = 1; j < mul[i-1].size()-1; j++) {
+            if (j < mul[i-1].size()-1) continue;
 
-    for (int i = 0; i < n; i++){
-        t.add_edge(0, i+1, -arr[i]);
+            if (!done[mul[i-1][j-1]][mul[i-1][j]]){
+                t.add_edge(mul[i-1][j-1], mul[i-1][j], INF);
+                done[mul[i-1][j-1]][mul[i-1][j]] = true;
+            }
+            
+            //cout << mul[i-1][j-1] << " | " << mul[i-1][j] << endl;
+        }
+        if (!done[mul[i-1][mul[i-1].size()-1]][n+1]){
+            t.add_edge(mul[i-1][mul[i-1].size()-1], n+1, INF);
+            done[mul[i-1][mul[i-1].size()-1]][n+1] = true;
+        }
+        for (int b : mul[i-1]) {
+            cout << b << " ";
+        }
+        cout << endl << endl;
+        cout << mul[i-1][mul[i-1].size()-1] << " | " << n+1 << endl;
     }
 
-    for (int i = 0; i < n; i++){
-        t.add_edge((2*i)+1, ((n+1)*2)-1, -arr[i]);
-    }
-
-    for (int i = 0; i < n; i++){
-        for (auto idx : mul[i]){
-            t.add_edge(i+1, (2*idx)+1, -10000000000);
+    for (int i = 0; i <= n+1; i++) {
+        for (int e : t.adj[i]) {
+            cout << i << " " << t.edges[e].v << " " << t.edges[e].f << " " << t.edges[e].c << endl;
         }
     }
-    cout << cnt << " " << t.max_flow() << endl;
-    cout << cnt - t.max_flow() << endl;
+
+    cout << "test" << endl;
+    ll ans = t.max_flow();
+    cout << cnt << " " << ans << endl;
+    ll temp = cnt-ans;
+    cout << temp << endl;
+    for (int i = 1; i <= n; i++) {
+        for (int e : t.adj[i]) {
+            if (t.edges[e].v == n+1 and t.edges[e].f > 0) {
+                temp += MAX;
+            }
+        }
+    }
+
+    cout << temp << endl;
 }
