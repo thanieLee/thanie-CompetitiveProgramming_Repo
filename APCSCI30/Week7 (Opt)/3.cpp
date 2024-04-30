@@ -5,6 +5,7 @@ vector<ll> colors;
 vector<vector<int>> adj;
 vector<ll> ans;
 vector<map<ll, ll>*> cnts;
+vector<pair<ll, ll>*> tempMx;
 
 void dfs(int u, int p) {
 
@@ -19,46 +20,46 @@ void dfs(int u, int p) {
             children.push_back(v);
         }
     }
+
     if (largest == -1) {
         cnts[u] = new map<ll, ll>;
+        tempMx[u] = new pair<ll, ll>;
+        tempMx[u]->first = 0;
+        tempMx[u]->second = 0;
     } else {
         cnts[u] = cnts[largest];
+        tempMx[u] = tempMx[largest];
     }
 
     for (int v : children) {
         if (v == largest) continue;
 
         for (auto it = cnts[v]->begin(); it != cnts[v]->end(); it++) {
-            if (cnts[u]->find(it->first) != cnts[u]->end()) {
-                (*cnts[u])[it->first] += it->second;
-            } else {
-                (*cnts[u])[it->first] = it->second;
+            (*cnts[u])[it->first] += it->second; 
+            if ((*cnts[u])[it->first] > tempMx[u]->first) {
+                tempMx[u]->first = (*cnts[u])[it->first];
+                tempMx[u]->second = it->first;
+            } else if ((*cnts[u])[it->first] == tempMx[u]->first) {
+                tempMx[u]->second += it->first;
             }
         }
     }
 
-    if (cnts[u]->find(colors[u]) != cnts[u]->end()) {
-        (*cnts[u])[colors[u]]++;
-    } else {
-        (*cnts[u])[colors[u]] = 1;
+    (*cnts[u])[colors[u]]++;
+    if ((*cnts[u])[colors[u]] > tempMx[u]->first) {
+        tempMx[u]->first = (*cnts[u])[colors[u]];
+        tempMx[u]->second = colors[u];
+    } else if ((*cnts[u])[colors[u]] == tempMx[u]->first) {
+        tempMx[u]->second += colors[u];
     }
+
     auto en = cnts[u]->end();
-    en--;
-    ll cnt = en->second;
-    ll an = 0;
-    while (en->second == cnt) {
-        an += en->second*en->first;
-        if (en == cnts[u]->begin()) break;
-        en--;
-    }
-    
-    ans[u] = an;
-    
+    ans[u] = tempMx[u]->second;
 }
 
 int main(){
     ll n; cin >> n;
-    adj.resize(n, vector<int>()); ans.resize(n); cnts.resize(n);
+    adj.resize(n, vector<int>()); ans.resize(n); cnts.resize(n); tempMx.resize(n);
     for (int i = 0; i < n; i++) {
         ll x; cin >> x;
         colors.push_back(x);
