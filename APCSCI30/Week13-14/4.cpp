@@ -72,6 +72,4 @@ int main(){
             ans.push_back(count_prefix(root, s));
         }
     }
-
-
 }
