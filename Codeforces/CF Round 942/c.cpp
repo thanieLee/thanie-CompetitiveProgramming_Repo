@@ -1,78 +1,141 @@
 #include <bits/stdc++.h>
 using namespace std;
 typedef long long int ll;
+ll MAX = 1000000000000000000;
 
-vector<vector<int>> all;
-int n, k;
 
-void generate(vector<int> cur) {
-    cout << k << " " << cur.size() << endl;
-    if (k == 0) return;
-    if (cur.size() == k) {
-        all.push_back(cur);
-        return;
-    } else {
-        for (int i = 0; i < n; i++) {
-            vector<int> newCur = cur;
-            newCur.push_back(i);
-            generate(newCur);
+struct segtree {
+    vector<ll> t, ladd, lset;
+    int n;
+
+    segtree(vector<ll> &a, int n) : n(n) {
+        t.resize(4*n);
+        ladd.resize(4*n, 0);
+        lset.resize(4*n, 0);
+        build(a, 1, 0, n-1);
+    }
+    void build(vector<ll> &a, int v, int tl, int tr) {
+        if (tl == tr) {
+            t[v] = a[tl];
+        } else {
+            int tm = (tl + tr) / 2;
+            build(a, v*2, tl, tm);
+            build(a, v*2+1, tm+1, tr);
+            pull(v);
         }
     }
-}
-
-int score(vector<int> cur) {
-    int ans = 0;
-    for (int i = 0; i < cur.size()-n+1; i++) {
-        set<int> c;
-        for (int j = i; j < i+n; j++) {
-            c.insert(cur[j]);
-        }
-        if (c.size() == n) ans++;
+    void pull(int v) {
+        t[v] = t[v*2] + t[v*2+1];
     }
-    return ans;
-}
+    void push(int v, int tl, int tr) {
+            if (lset[v]) {
+                if (tl != tr) {
+                    lset[v*2] = lset[v*2+1] = lset[v];
+                    ladd[v*2] = ladd[v*2+1] = 0;
+                }
+                t[v] = (tr - tl + 1) * lset[v];
+                lset[v] = 0;
+            } 
+            if (ladd[v]) {
+                t[v] += (tr - tl + 1) * ladd[v];
+
+                if (tl != tr) {
+                    ladd[v*2] += ladd[v];
+                    ladd[v*2+1] += ladd[v];
+                }
+                
+                ladd[v] = 0;
+            }
+    }
+    void increment(int v, int tl, int tr, int l, int r, ll val) {
+        push(v, tl, tr);
+        if (l > r)
+            return;
+        if (l == tl and r == tr) {
+            ladd[v] += val;
+            push(v, tl, tr);
+        } else {
+            int tm = (tl + tr)/2;
+            increment(v*2, tl, tm, l, min(r, tm), val);
+            increment(v*2+1, tm+1, tr, max(l, tm+1), r, val);
+            pull(v);
+        }
+    }
+    void set(int v, int tl, int tr, int l, int r, ll val) {
+        push(v, tl, tr);
+        if (l > r)
+            return;
+        if (l == tl and r == tr) {
+            lset[v] = val;
+            push(v, tl, tr);
+        } else {
+            int tm = (tl + tr) / 2;
+            set(v*2, tl, tm, l, min(r, tm), val);
+            set(v*2+1, tm+1, tr, max(l, tm+1), r, val);
+            pull(v);
+        }
+    }
+
+
+    ll query(int v, int tl, int tr, int l, int r) {
+        push(v, tl, tr);
+        if (l > r)
+            return 0;
+        if (l == tl and r == tr)
+            return t[v];
+        int tm = (tl + tr) / 2;
+        return query(v*2, tl, tm, l, min(r, tm)) + query(v*2+1, tm+1, tr, max(l, tm+1), r);
+    }
+};
 
 
 int main(){
     int t; cin >> t;
     while (t--) {
-        cin >> n >> k;
-        vector<int> a;
+        ll n, k; cin >> n >> k;
+        vector<ll> arr(n);
         for (int i = 0; i < n; i++) {
-            int ai; cin >> ai;
-            for (int j = 0; j < ai; j++) {
-                a.push_back(i);
-            }
+            ll ai; cin >> ai;
+            arr[i] = ai;
         }
-        cout << a.size() << " " << k << endl;
+        sort(arr.begin(), arr.end());
+        segtree t(arr, n);
 
-        int curAns = 0;
-        generate({});
-        vector<vector<int>> curPerms;
-        cout << all[0].size() << endl;
-        for (int i = 0; i < all.size(); i++) {
-            vector<int> cur = all[i];
-            for (int j = 0; j < a.size(); j++) {
-                cur.push_back(a[j]);
+
+
+        ll cost = 0;
+        ll prev = 0;
+        for (int i = 1; i < n; i++) {
+            cost = arr[i]-arr[i-1];
+            prev = i;
+            if (k >= cost*i) {
+                t.increment(1, 0, n-1, 0, i-1, cost);
+                k -= cost*i;
+            } else {
+                t.increment(1, 0, n-1, 0, i-1, k/i);
+                k -= (k/i)*i;
+                break;
             }
-            sort(cur.begin(), cur.end());
-            do {
-                if (curAns == score(cur)) {
-                    curPerms.push_back(cur);
-                } else if (curAns < score(cur)) {
-                    curAns = score(cur);
-                    curPerms = {cur};
-                }
-            } while (next_permutation(cur.begin(), cur.end()));
         }
 
-        cout << curAns << endl;
-        for (auto v : curPerms) {
-            for (int i : v) {
-                cout << i+1 << " ";
-            }
-            cout << endl;
+
+        if (k > 0){
+            t.increment(1, 0, n-1, 0, prev, k/(prev+1));
+            k -= (k/(prev+1))*(prev+1);
         }
-        cout << endl;
+
+        if (k%(prev+1) > 0)
+                t.increment(1, 0, n-1, 0, k%(prev+1) - 1, 1);
+
+        ll w = MAX;
+        for (int i = 0; i < n; i++) {
+            w = min(t.query(1, 0, n-1, i, i), w);
+        }
+
+        ll ans = n*w + 1;
+        for (int i = 0; i < n; i++) {
+            if (w == t.query(1, 0, n-1, i, i)) ans--;
+        }
+        cout << ans << endl;
     }
 }
