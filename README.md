@@ -1,1 +1,0 @@
-# thanie-CompetitiveProgramming_Repo
