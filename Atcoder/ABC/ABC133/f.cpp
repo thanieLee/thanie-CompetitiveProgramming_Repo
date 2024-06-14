@@ -42,7 +42,7 @@ struct segtree {
     }
     pll query(int v, int tl, int tr, int l, int r) {
         if (l > r)
-            return pll(1000000, 1000000);
+            return pll(2000000000, 2000000000);
         if (l == tl and r == tr)
             return t[v];
         int tm = (tl + tr) / 2;
@@ -73,10 +73,9 @@ void dfs1(int u, int p, ll dep, ll distan) {
     start[u] = arr.size()-1;
     depth[u] = dep;
 	dist[u] = distan;
-
     for (point v : adj[u]) {
         if (v.next != p) {
-			euler.push_back({euler.size(), v.d+euler[euler.size()-1].second});
+            euler.push_back({euler.size(), v.d+euler[euler.size()-1].second});
 			color_euler[v.c].push_back({euler.size()-1, v.d+color_euler[v.c][color_euler[v.c].size()-1].second});
 			color_euler_count[v.c].push_back({euler.size()-1, 1+color_euler_count[v.c][color_euler_count[v.c].size()-1].second});
 			dfs1(v.next, u, dep+1, distan+v.d);
@@ -109,19 +108,20 @@ int main(){
         adj[a].push_back({b, c, d});
         adj[b].push_back({a, c, d});
     }
-
     dfs1(0, -1, 0, 0);
     segtree lca(arr, arr.size());
-	for (int i = 0; i < euler.size(); i++) {
-		cout << euler[i].first << " " << euler[i].second << endl;
-	}
-	cout << endl;
+	// for (int i = 0; i < euler.size(); i++) {
+	// 	cout << euler[i].first << " " << euler[i].second << endl;
+	// }
+	// cout << endl;
 	for (int i = 0; i < n-1; i++) {
-		vector<pll> cur = color_euler[i];
-		for (int j = 0; j < cur.size(); j++) {
-			cout << cur[j].first << " " << cur[j].second << endl;
-		}
-		cout << endl;
+		vector<pll> cur = color_euler_count[i];
+		// for (int j = 0; j < cur.size(); j++) {
+		// 	cout << cur[j].first << " " << cur[j].second << endl;
+		// }
+		// cout << endl;
+        color_euler_count[i].push_back({2000000000, 2000000000});
+        color_euler[i].push_back({2000000000, 2000000000});
 	}
 	for (int i = 0; i < q; i++) {
 		ll x, y, u, v; cin >> x >> y >> u >> v; x--; u--; v--;
@@ -130,22 +130,18 @@ int main(){
 
 		ll par = lca.query(1, 0, arr.size()-1, fir, sec).second;	
 		ll total = dist[u]+dist[v] - 2*dist[par];
-		pll search1(fir, -1), search2(sec, -1);
+		pll search1(fir, 2000000000), search2(sec, 2000000000), search3(start[par], 2000000000);
 		auto p1 = upper_bound(color_euler[x].begin(), color_euler[x].end(), search1);
 		auto p2 = upper_bound(color_euler[x].begin(), color_euler[x].end(), search2);
-		p1--; p2--;
-		ll color_start = p1->second;
-		ll color_end = p2->second;
-		ll final_dist = total - (color_end-color_start);
+        auto p5 = upper_bound(color_euler[x].begin(), color_euler[x].end(), search3);
+		p1--; p2--; p5--;
+		ll final_dist = total - (p1->second - p5->second) - (p2->second-p5->second);
 		auto p3 = upper_bound(color_euler_count[x].begin(), color_euler_count[x].end(), search1);
 		auto p4 = upper_bound(color_euler_count[x].begin(), color_euler_count[x].end(), search2);
-		p3--; p4--;
+        auto p6 = upper_bound(color_euler_count[x].begin(), color_euler_count[x].end(), search3);
+        p3--; p4--; p6--;
 		ll cnt_start = p3->second;
 		ll cnt_end = p4->second;
-		cout << fir << " " << sec << endl;
-		cout << total << " " << final_dist << endl;
-		cout << color_start << " " << color_end << endl;
-		cout << cnt_end << " " << cnt_start << endl;
-		cout << final_dist + y*(cnt_end-cnt_start) << endl;
+		cout << final_dist + y*(cnt_end+cnt_start - 2*p6->second) << endl;
 	}
 }
