@@ -22,7 +22,7 @@ void solve(vector<string> words){
             if (pos_diff == 1 and diff_idx != -1) {
                 vector<string> test = {cur.substr(diff_idx, 2), next.substr(diff_idx, 2)};
                 string first = test[0], second = test[1];
-                pairs.insert({{first, second}, {diff_idx, words[0].size()-diff_idx-2}});
+                pairs.insert({{first, second}, {diff_idx, words[0].size()}});
             }
         }
     }
